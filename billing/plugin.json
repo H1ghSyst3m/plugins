@@ -13,7 +13,7 @@
         "admin"
     ],
     "panel_version": null,
-    "composer_packages": [
-        "stripe/stripe-php"
-    ]
+    "composer_packages": {
+        "stripe/stripe-php": "^18.0"
+    }
 }
