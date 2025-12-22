@@ -74,7 +74,7 @@ class PlayersPage extends Page implements HasTable
         /** @var ?GameQuery $gameQuery */
         $gameQuery = $server->egg->gameQuery;
 
-        $isMinecraft = $gameQuery?->query_type === 'minecraft';
+        $isMinecraft = $gameQuery?->query_type->isMinecraft();
 
         $whitelist = [];
         $ops = [];
