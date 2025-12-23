@@ -37,7 +37,7 @@ class SubdomainResource extends Resource
         /** @var Server $server */
         $server = Filament::getTenant();
 
-        return parent::canAccess() && $server->allocation && CloudflareDomain::count() > 0;
+        return parent::canAccess() && $server->allocation && $server->allocation->ip !== '0.0.0.0' && $server->allocation->ip !== '::' && CloudflareDomain::count() > 0;
     }
 
     public static function getNavigationLabel(): string
