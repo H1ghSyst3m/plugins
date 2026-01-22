@@ -33,8 +33,10 @@ class SrvTargetResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label(trans('subdomains::strings.name'))
-                    ->url(fn (Node $node) => EditNode::getUrl(['record' => $node])),
+                    ->label(trans('admin/node.table.name'))
+                    ->url(fn (Node $node) => user()?->can('update', $node) ? EditNode::getUrl(['record' => $node]) : null),
+                TextColumn::make('fqdn')
+                    ->label(trans('admin/node.table.address')),
                 TextInputColumn::make('srv_target')
                     ->label(trans('subdomains::strings.srv_target'))
                     ->placeholder(trans('subdomains::strings.no_srv_target'))
