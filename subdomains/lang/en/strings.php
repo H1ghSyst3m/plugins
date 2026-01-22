@@ -21,7 +21,7 @@ return [
     'sync' => 'Sync',
 
     'api_token' => 'Cloudflare API Token',
-    'api_token_help' => 'The token needs to have read permissions for Zone.Zone and write for Zone.Dns. For better security you can also set the "Zone Resources" to exclude certain domains and add the panel ip to the "Client IP Adress Filtering".',
+    'api_token_help' => 'The token needs to have read permissions for Zone.Zone and write for Zone.Dns. For better security you can also set the "Zone Resources" to exclude certain domains and add the panel ip to the "Client IP Address Filtering".',
 
     'notifications' => [
         'synced' => 'Domain synced with cloudflare',
