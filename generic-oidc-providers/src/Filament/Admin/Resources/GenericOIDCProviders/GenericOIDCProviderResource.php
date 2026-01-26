@@ -6,7 +6,6 @@ use Boy132\GenericOIDCProviders\Filament\Admin\Resources\GenericOIDCProviders\Pa
 use Boy132\GenericOIDCProviders\Filament\Admin\Resources\GenericOIDCProviders\Pages\EditGenericOIDCProvider;
 use Boy132\GenericOIDCProviders\Filament\Admin\Resources\GenericOIDCProviders\Pages\ListGenericOIDCProviders;
 use Boy132\GenericOIDCProviders\Models\GenericOIDCProvider;
-use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -15,6 +14,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\StateCasts\BooleanStateCast;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -32,6 +32,8 @@ class GenericOIDCProviderResource extends Resource
     protected static ?string $slug = 'generic-oidc-providers';
 
     protected static string|\BackedEnum|null $navigationIcon = 'tabler-brand-oauth';
+
+    protected static ?string $recordTitleAttribute = 'id';
 
     public static function getNavigationGroup(): ?string
     {
@@ -61,7 +63,6 @@ class GenericOIDCProviderResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema
-            ->columns(3)
             ->components([
                 TextInput::make('id')
                     ->label('ID')
@@ -88,15 +89,14 @@ class GenericOIDCProviderResource extends Resource
                     ->label(trans('generic-oidc-providers::strings.base_url'))
                     ->required()
                     ->url()
-                    ->autocomplete(false),
-                Toggle::make('create_missing_users')
-                    ->label(trans('admin/setting.oauth.create_missing_users'))
-                    ->inline(false)
-                    ->onIcon('tabler-check')
-                    ->offIcon('tabler-x')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->stateCast(new BooleanStateCast(false)),
+                    ->autocomplete(false)
+                    ->columnSpan(fn ($operation) => $operation === 'create' ? 2 : 1),
+                TextInput::make('redirect_url')
+                    ->label(trans('generic-oidc-providers::strings.redirect_url'))
+                    ->saved(false)
+                    ->formatStateUsing(fn (Get $get) => url('/auth/oauth/callback/' . $get('id')))
+                    ->disabled()
+                    ->hiddenOn('create'),
                 TextInput::make('client_id')
                     ->label(trans('admin/setting.oauth.client_id'))
                     ->required()
@@ -109,27 +109,40 @@ class GenericOIDCProviderResource extends Resource
                     ->password()
                     ->revealable()
                     ->autocomplete(false),
-                Toggle::make('link_missing_users')
-                    ->label(trans('admin/setting.oauth.link_missing_users'))
-                    ->inline(false)
-                    ->onIcon('tabler-check')
-                    ->offIcon('tabler-x')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->stateCast(new BooleanStateCast(false)),
-                Toggle::make('verify_jwt')
-                    ->label(trans('generic-oidc-providers::strings.verify_jwt'))
-                    ->inline(false)
-                    ->onIcon('tabler-check')
-                    ->offIcon('tabler-x')
-                    ->onColor('success')
-                    ->offColor('danger')
-                    ->stateCast(new BooleanStateCast(false))
-                    ->live(),
+                Group::make()
+                    ->columns(3)
+                    ->columnSpanFull()
+                    ->schema([
+                        Toggle::make('create_missing_users')
+                            ->label(trans('admin/setting.oauth.create_missing_users'))
+                            ->inline(false)
+                            ->onIcon('tabler-check')
+                            ->offIcon('tabler-x')
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->stateCast(new BooleanStateCast(false)),
+                        Toggle::make('link_missing_users')
+                            ->label(trans('admin/setting.oauth.link_missing_users'))
+                            ->inline(false)
+                            ->onIcon('tabler-check')
+                            ->offIcon('tabler-x')
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->stateCast(new BooleanStateCast(false)),
+                        Toggle::make('verify_jwt')
+                            ->label(trans('generic-oidc-providers::strings.verify_jwt'))
+                            ->inline(false)
+                            ->onIcon('tabler-check')
+                            ->offIcon('tabler-x')
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->stateCast(new BooleanStateCast(false))
+                            ->live(),
+                    ]),
                 Textarea::make('jwt_public_key')
                     ->label(trans('generic-oidc-providers::strings.jwt_public_key'))
                     ->visible(fn (Get $get) => $get('verify_jwt'))
-                    ->columnSpan(2)
+                    ->columnSpanFull()
                     ->rows(3)
                     ->autosize()
                     ->placeholder('-----BEGIN PUBLIC KEY-----
@@ -178,10 +191,7 @@ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
             ])
             ->emptyStateIcon('tabler-brand-oauth')
             ->emptyStateDescription('')
-            ->emptyStateHeading(trans('generic-oidc-providers::strings.no_generic_oidc_providers'))
-            ->emptyStateActions([
-                CreateAction::make(),
-            ]);
+            ->emptyStateHeading(trans('generic-oidc-providers::strings.no_generic_oidc_providers'));
     }
 
     public static function getPages(): array
