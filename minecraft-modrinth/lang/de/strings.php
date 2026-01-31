@@ -37,7 +37,6 @@ return [
 
     'actions' => [
         'install' => 'Installieren',
-        'download' => 'Herunterladen',
         'installed' => 'Installiert',
         'update' => 'Aktualisieren',
         'uninstall' => 'Deinstallieren',
@@ -55,8 +54,6 @@ return [
         'install_success_body' => ':name Version :version erfolgreich installiert',
         'install_failed' => 'Installation fehlgeschlagen',
         'install_failed_body' => 'Bei der Installation ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem weiterhin besteht.',
-        'download_started' => 'Download gestartet',
-        'download_failed' => 'Download konnte nicht gestartet werden',
         'update_success' => 'Aktualisierung abgeschlossen',
         'update_success_body' => 'Erfolgreich auf Version :version aktualisiert',
         'update_failed' => 'Aktualisierung fehlgeschlagen',

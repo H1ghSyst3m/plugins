@@ -37,7 +37,6 @@ return [
 
     'actions' => [
         'install' => 'Install',
-        'download' => 'Download',
         'installed' => 'Installed',
         'update' => 'Update',
         'uninstall' => 'Uninstall',
@@ -55,8 +54,6 @@ return [
         'install_success_body' => 'Successfully installed :name version :version',
         'install_failed' => 'Installation failed',
         'install_failed_body' => 'An error occurred during installation. Please try again or contact support if the issue persists.',
-        'download_started' => 'Download started',
-        'download_failed' => 'Download could not be started',
         'update_success' => 'Update completed',
         'update_success_body' => 'Successfully updated to version :version',
         'update_failed' => 'Update failed',
