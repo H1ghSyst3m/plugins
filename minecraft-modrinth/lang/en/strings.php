@@ -36,11 +36,33 @@ return [
     ],
 
     'actions' => [
+        'install' => 'Install',
         'download' => 'Download',
+        'installed' => 'Installed',
+        'update' => 'Update',
+        'uninstall' => 'Uninstall',
+    ],
+
+    'modals' => [
+        'update_heading' => 'Update Mod/Plugin',
+        'update_description' => 'This will replace version :old_version with version :new_version. The old file will be deleted.',
+        'uninstall_heading' => 'Uninstall Mod/Plugin',
+        'uninstall_description' => 'Are you sure you want to uninstall :name? This will permanently delete the file from your server.',
     ],
 
     'notifications' => [
+        'install_success' => 'Installation completed',
+        'install_success_body' => 'Successfully installed :name version :version',
+        'install_failed' => 'Installation failed',
+        'install_failed_body' => 'An error occurred during installation. Please try again or contact support if the issue persists.',
         'download_started' => 'Download started',
         'download_failed' => 'Download could not be started',
+        'update_success' => 'Update completed',
+        'update_success_body' => 'Successfully updated to version :version',
+        'update_failed' => 'Update failed',
+        'update_failed_body' => 'An error occurred during the update. Please try again or contact support if the issue persists.',
+        'uninstall_success' => 'Uninstall completed',
+        'uninstall_failed' => 'Uninstall failed',
+        'uninstall_failed_body' => 'An error occurred during uninstallation. Please try again or contact support if the issue persists.',
     ],
 ];

@@ -3,6 +3,7 @@
 namespace Boy132\MinecraftModrinth\Services;
 
 use App\Models\Server;
+use App\Repositories\Daemon\DaemonFileRepository;
 use Boy132\MinecraftModrinth\Enums\MinecraftLoader;
 use Boy132\MinecraftModrinth\Enums\ModrinthProjectType;
 use Exception;
@@ -99,5 +100,180 @@ class MinecraftModrinthService
                 return [];
             }
         });
+    }
+
+    protected function getMetadataFilePath(Server $server): string
+    {
+        $folder = ModrinthProjectType::fromServer($server)->getFolder();
+
+        return $folder . '/.modrinth-metadata.json';
+    }
+
+    /** @return array<int, array{project_id: string, project_slug: string, project_title: string, version_id: string, version_number: string, filename: string, installed_at: string}> */
+    public function getInstalledModsMetadata(Server $server, DaemonFileRepository $fileRepository): array
+    {
+        try {
+            $metadataPath = $this->getMetadataFilePath($server);
+            $content = $fileRepository->setServer($server)->getContent($metadataPath);
+            $metadata = json_decode($content, true);
+
+            if (!is_array($metadata) || !isset($metadata['installed_mods']) || !is_array($metadata['installed_mods'])) {
+                return [];
+            }
+
+            $validInstalledMods = [];
+            $requiredKeys = [
+                'project_id',
+                'project_slug',
+                'project_title',
+                'version_id',
+                'version_number',
+                'filename',
+                'installed_at',
+            ];
+
+            // Flip once for efficient comparison
+            $requiredKeysFlipped = array_flip($requiredKeys);
+
+            foreach ($metadata['installed_mods'] as $entry) {
+                if (!is_array($entry)) {
+                    continue;
+                }
+
+                $missingKeys = array_diff_key($requiredKeysFlipped, $entry);
+                if (empty($missingKeys)) {
+                    $validInstalledMods[] = $entry;
+                }
+            }
+
+            return $validInstalledMods;
+        } catch (Exception $exception) {
+            // File doesn't exist yet or is invalid, return empty array
+            return [];
+        }
+    }
+
+    public function saveModMetadata(
+        Server $server,
+        DaemonFileRepository $fileRepository,
+        string $projectId,
+        string $projectSlug,
+        string $projectTitle,
+        string $versionId,
+        string $versionNumber,
+        string $filename
+    ): bool {
+        try {
+            $metadata = [
+                'installed_mods' => $this->getInstalledModsMetadata($server, $fileRepository),
+            ];
+
+            // Remove any existing entry for this project
+            $metadata['installed_mods'] = collect($metadata['installed_mods'])
+                ->filter(fn ($mod) => $mod['project_id'] !== $projectId)
+                ->values()
+                ->toArray();
+
+            // Add new entry
+            $metadata['installed_mods'][] = [
+                'project_id' => $projectId,
+                'project_slug' => $projectSlug,
+                'project_title' => $projectTitle,
+                'version_id' => $versionId,
+                'version_number' => $versionNumber,
+                'filename' => $filename,
+                'installed_at' => now()->toIso8601String(),
+            ];
+
+            $metadataPath = $this->getMetadataFilePath($server);
+            $result = $fileRepository->setServer($server)->putContent(
+                $metadataPath,
+                json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            );
+
+            if ($result === false) {
+                return false;
+            }
+
+            return true;
+        } catch (Exception $exception) {
+            report($exception);
+
+            return false;
+        }
+    }
+
+    public function removeModMetadata(Server $server, DaemonFileRepository $fileRepository, string $projectId): bool
+    {
+        try {
+            $metadata = [
+                'installed_mods' => $this->getInstalledModsMetadata($server, $fileRepository),
+            ];
+
+            $metadata['installed_mods'] = collect($metadata['installed_mods'])
+                ->filter(fn ($mod) => $mod['project_id'] !== $projectId)
+                ->values()
+                ->toArray();
+
+            $metadataPath = $this->getMetadataFilePath($server);
+            $result = $fileRepository->setServer($server)->putContent(
+                $metadataPath,
+                json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            );
+
+            if ($result === false) {
+                return false;
+            }
+
+            return true;
+        } catch (Exception $exception) {
+            report($exception);
+
+            return false;
+        }
+    }
+
+    /** @return array{project_id: string, project_slug: string, project_title: string, version_id: string, version_number: string, filename: string, installed_at: string}|null */
+    public function getInstalledMod(Server $server, DaemonFileRepository $fileRepository, string $projectId): ?array
+    {
+        $installedMods = $this->getInstalledModsMetadata($server, $fileRepository);
+
+        foreach ($installedMods as $mod) {
+            if ($mod['project_id'] === $projectId) {
+                return $mod;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array{version_id: string, version_number: string}  $installedMod
+     * @param  array<int, array{id: string, version_number: string}>  $availableVersions
+     */
+    public function isUpdateAvailable(array $installedMod, array $availableVersions): bool
+    {
+        if (empty($availableVersions)) {
+            return false;
+        }
+
+        $latestVersion = $availableVersions[0];
+
+        return $installedMod['version_id'] !== $latestVersion['id'];
+    }
+
+    /**
+     * Get installed mods/plugins filenames from the server (for backward compatibility)
+     *
+     * @return array<string>
+     */
+    public function getInstalledMods(Server $server, DaemonFileRepository $fileRepository): array
+    {
+        $metadata = $this->getInstalledModsMetadata($server, $fileRepository);
+
+        return collect($metadata)
+            ->pluck('filename')
+            ->map(fn ($name) => strtolower($name))
+            ->toArray();
     }
 }

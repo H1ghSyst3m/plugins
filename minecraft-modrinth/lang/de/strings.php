@@ -36,11 +36,33 @@ return [
     ],
 
     'actions' => [
+        'install' => 'Installieren',
         'download' => 'Herunterladen',
+        'installed' => 'Installiert',
+        'update' => 'Aktualisieren',
+        'uninstall' => 'Deinstallieren',
+    ],
+
+    'modals' => [
+        'update_heading' => 'Mod/Plugin aktualisieren',
+        'update_description' => 'Dies ersetzt Version :old_version durch Version :new_version. Die alte Datei wird gelöscht.',
+        'uninstall_heading' => 'Mod/Plugin deinstallieren',
+        'uninstall_description' => 'Möchten Sie :name wirklich deinstallieren? Dies wird die Datei dauerhaft von Ihrem Server löschen.',
     ],
 
     'notifications' => [
+        'install_success' => 'Installation abgeschlossen',
+        'install_success_body' => ':name Version :version erfolgreich installiert',
+        'install_failed' => 'Installation fehlgeschlagen',
+        'install_failed_body' => 'Bei der Installation ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem weiterhin besteht.',
         'download_started' => 'Download gestartet',
         'download_failed' => 'Download konnte nicht gestartet werden',
+        'update_success' => 'Aktualisierung abgeschlossen',
+        'update_success_body' => 'Erfolgreich auf Version :version aktualisiert',
+        'update_failed' => 'Aktualisierung fehlgeschlagen',
+        'update_failed_body' => 'Bei der Aktualisierung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem weiterhin besteht.',
+        'uninstall_success' => 'Deinstallation abgeschlossen',
+        'uninstall_failed' => 'Deinstallation fehlgeschlagen',
+        'uninstall_failed_body' => 'Bei der Deinstallation ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder wenden Sie sich an den Support, wenn das Problem weiterhin besteht.',
     ],
 ];
