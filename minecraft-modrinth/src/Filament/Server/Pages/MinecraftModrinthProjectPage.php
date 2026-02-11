@@ -538,7 +538,9 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
 
                             Notification::make()
                                 ->title(trans('minecraft-modrinth::strings.notifications.uninstall_success'))
-                                ->body($record['title'])
+                                ->body(trans('minecraft-modrinth::strings.notifications.uninstall_success_body', [
+                                    'name' => $record['title'],
+                                ]))
                                 ->success()
                                 ->send();
                         } catch (Exception $exception) {
