@@ -9,15 +9,16 @@ use App\Traits\Filament\BlockAccessInConflict;
 use Boy132\MinecraftModrinth\Enums\MinecraftLoader;
 use Boy132\MinecraftModrinth\Enums\ModrinthProjectType;
 use Boy132\MinecraftModrinth\Facades\MinecraftModrinth;
-use Boy132\MinecraftModrinth\Filament\Components\TabsComponent;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Resources\Concerns\HasTabs;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -27,21 +28,12 @@ use Filament\Tables\Table;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
-use Livewire\Attributes\Url;
 
 class MinecraftModrinthProjectPage extends Page implements HasTable
 {
     use BlockAccessInConflict;
+    use HasTabs;
     use InteractsWithTable;
-
-    private const ALLOWED_TABS = ['all', 'installed'];
-
-    private const DEFAULT_TAB = 'all';
-
-    protected string $view = 'minecraft-modrinth::modrinth-project-page';
-
-    #[Url(as: 'view', except: self::DEFAULT_TAB)]
-    public string $activeTab = self::DEFAULT_TAB;
 
     /** @var array<int, array{project_id: string, project_slug: string, project_title: string, version_id: string, version_number: string, filename: string, installed_at: string, author?: string}>|null */
     protected ?array $installedModsMetadata = null;
@@ -88,29 +80,17 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
         return static::getNavigationLabel();
     }
 
-    /**
-     * Normalizes a tab value to ensure it's in the allowed list.
-     * Returns the default tab if the value is invalid.
-     */
-    private function normalizeTab(string $tab): string
-    {
-        return in_array($tab, self::ALLOWED_TABS, true) ? $tab : self::DEFAULT_TAB;
-    }
-
     public function mount(): void
     {
-        $this->activeTab = $this->normalizeTab($this->activeTab);
+        $this->loadDefaultActiveTab();
     }
 
-    public function setActiveTab(string $tab): void
+    public function getTabs(): array
     {
-        $this->activeTab = $this->normalizeTab($tab);
-    }
-
-    public function updatedActiveTab(): void
-    {
-        $this->activeTab = $this->normalizeTab($this->activeTab);
-        $this->resetTable();
+        return [
+            'all' => Tab::make(trans('minecraft-modrinth::strings.page.view_all')),
+            'installed' => Tab::make(trans('minecraft-modrinth::strings.page.view_installed')),
+        ];
     }
 
     /** @return array<int, array{project_id: string, project_slug: string, project_title: string, version_id: string, version_number: string, filename: string, installed_at: string}> */
@@ -179,13 +159,6 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
         }
 
         return basename($filename);
-    }
-
-    protected function refreshIfInInstalledView(): void
-    {
-        if ($this->activeTab === 'installed') {
-            $this->js('$wire.$refresh()');
-        }
     }
 
     /**
@@ -534,7 +507,10 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
 
                             $this->installedModsMetadata = null;
                             $this->versionsCache = [];
-                            $this->refreshIfInInstalledView();
+
+                            if ($this->activeTab === 'installed') {
+                                $this->js('$wire.$refresh()');
+                            }
 
                             Notification::make()
                                 ->title(trans('minecraft-modrinth::strings.notifications.uninstall_success'))
@@ -548,7 +524,10 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
 
                             $this->installedModsMetadata = null;
                             $this->versionsCache = [];
-                            $this->refreshIfInInstalledView();
+
+                            if ($this->activeTab === 'installed') {
+                                $this->js('$wire.$refresh()');
+                            }
 
                             Notification::make()
                                 ->title(trans('minecraft-modrinth::strings.notifications.uninstall_failed'))
@@ -621,7 +600,7 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
                             })
                             ->badge(),
                     ]),
-                TabsComponent::make(),
+                $this->getTabsContentComponent(),
                 EmbeddedTable::make(),
             ]);
     }
