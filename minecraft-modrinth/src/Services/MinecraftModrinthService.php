@@ -137,7 +137,6 @@ class MinecraftModrinthService
                 if (isset($project['updated']) && !isset($project['date_modified'])) {
                     $project['date_modified'] = $project['updated'];
                 }
-                // Use stored author from metadata if available, since bulk API doesn't include it
                 if (isset($installedMod['author']) && !isset($project['author'])) {
                     $project['author'] = $installedMod['author'];
                 }

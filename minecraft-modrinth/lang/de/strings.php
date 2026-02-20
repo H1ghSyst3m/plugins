@@ -43,6 +43,7 @@ return [
         'installed' => 'Installiert',
         'update' => 'Aktualisieren',
         'uninstall' => 'Deinstallieren',
+        'versions' => 'Versionsauswahl',
     ],
 
     'modals' => [
