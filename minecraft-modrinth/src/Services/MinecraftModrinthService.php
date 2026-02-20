@@ -110,6 +110,10 @@ class MinecraftModrinthService
             }
         });
 
+        if (!is_array($modrinthProjects)) {
+            $modrinthProjects = [];
+        }
+
         $modrinthMap = [];
         foreach ($modrinthProjects as $project) {
             if (isset($project['id'])) {

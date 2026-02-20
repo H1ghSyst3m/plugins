@@ -156,7 +156,7 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
      */
     protected function validateFilename(string $filename): string
     {
-        if ($filename === '' || str_contains($filename, '/') || str_contains($filename, '\\')) {
+        if ($filename === '' || $filename === '.' || str_contains($filename, "\0") || str_contains($filename, '..') || str_contains($filename, '/') || str_contains($filename, '\\')) {
             throw new Exception('Invalid filename: potential path traversal detected');
         }
 
@@ -175,6 +175,15 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
 
                 if ($this->activeTab === 'installed') {
                     $installedMods = $this->getInstalledModsMetadata();
+
+                    if ($search) {
+                        $searchLower = strtolower($search);
+                        $installedMods = array_values(array_filter($installedMods, function (array $mod) use ($searchLower) {
+                            return str_contains(strtolower($mod['project_title']), $searchLower)
+                                || str_contains(strtolower($mod['project_slug']), $searchLower);
+                        }));
+                    }
+
                     $projects = MinecraftModrinth::getInstalledModsFromModrinth($installedMods, $page);
 
                     $totalCount = count($installedMods);
@@ -521,7 +530,7 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
                         return $installedMod['version_id'] !== $versions[0]['id'];
                     })
                     ->requiresConfirmation()
-                    ->modalHeading(fn (array $record) => trans('minecraft-modrinth::strings.modals.update_heading'))
+                    ->modalHeading(trans('minecraft-modrinth::strings.modals.update_heading'))
                     ->modalDescription(function (array $record) {
                         $installedMod = $this->getInstalledMod($record['project_id']);
                         $versions = $this->getCachedVersions($record['project_id']);
@@ -706,12 +715,6 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
 
                             $safeFilename = $this->validateFilename($installedMod['filename']);
 
-                            $metadataRemoved = MinecraftModrinth::removeModMetadata($server, $fileRepository, $record['project_id']);
-
-                            if ($metadataRemoved === false) {
-                                throw new Exception('Failed to remove mod metadata');
-                            }
-
                             $type = ModrinthProjectType::fromServer($server);
                             if (!$type) {
                                 throw new Exception('Server does not support Modrinth mods or plugins');
@@ -725,6 +728,12 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
                                     'files' => [$folder . '/' . $safeFilename],
                                 ])
                                 ->throw();
+
+                            $metadataRemoved = MinecraftModrinth::removeModMetadata($server, $fileRepository, $record['project_id']);
+
+                            if ($metadataRemoved === false) {
+                                throw new Exception('Failed to remove mod metadata');
+                            }
 
                             $this->installedModsMetadata = null;
                             $this->versionsCache = [];
