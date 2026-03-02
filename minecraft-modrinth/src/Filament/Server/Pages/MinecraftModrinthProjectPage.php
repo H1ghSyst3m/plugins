@@ -416,11 +416,11 @@ class MinecraftModrinthProjectPage extends Page implements HasTable
 
                         return $sections;
                     }),
-                Action::make('install')
+                Action::make('install_latest')
                     ->iconButton()
                     ->icon('tabler-download')
                     ->color('success')
-                    ->tooltip(trans('minecraft-modrinth::strings.actions.install'))
+                    ->tooltip(trans('minecraft-modrinth::strings.actions.install_latest'))
                     ->visible(function (array $record) {
                         $installedMod = $this->getInstalledMod($record['project_id']);
 

@@ -39,6 +39,7 @@ return [
     ],
 
     'actions' => [
+        'install_latest' => 'Neueste Version installieren',
         'install' => 'Installieren',
         'installed' => 'Installiert',
         'update' => 'Aktualisieren',
